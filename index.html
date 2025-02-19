@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ferreteria y tornilleria las 2m</title>
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        /* Buscador y controles */
+        .controles {
+            margin: 30px auto;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .buscador, .ordenar, .categoria {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        /* Contenedor de la galería */
+        .galeria {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* Estilos para cada producto */
+        .producto {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            width: 200px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .producto img {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .producto h3 {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .producto p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* Paginación */
+        .paginacion {
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .paginacion button {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .paginacion button.active {
+            background-color: #333;
+            color: white;
+        }
+
+        /* Pie de página */
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Galería de Productos con Buscador y Paginación</h1>
+
+    <!-- Controles de búsqueda, ordenamiento y categoría -->
+    <div class="controles">
+        <input type="text" id="buscador" class="buscador" placeholder="Buscar por código o nombre...">
+        <select id="ordenar" class="ordenar">
+            <option value="precio-asc">Precio: Menor a Mayor</option>
+            <option value="precio-desc">Precio: Mayor a Menor</option>
+            <option value="categoria">Categoría</option>
+        </select>
+        <select id="categoria" class="categoria">
+            <option value="todas">Todas las Categorías</option>
+            <option value="bisagras">Bisagras</option>
+            <option value="pinturas">Pinturas</option>
+            <option value="inodoro">inodoro</option>
+            <!-- Agrega más categorías según sea necesario -->
+        </select>
+    </div>
+
+    <!-- Galería de productos -->
+    <div class="galeria" id="galeria"></div>
+
+    <!-- Paginación -->
+    <div class="paginacion" id="paginacion"></div>
+
+    <!-- Pie de página -->
+    <footer>
+        <p>&copy; 2025 Galería de Productos. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+        // Datos de productos (simulados)
+        const productos = [
+            { codigo: "BDP01", nombre: "BISAGRA TUBULAR 3/4 INDUMA", categoria: "bisagras", precio: 1.50, imagen: "IMG/BIS01.JPG" },
+            { codigo: "B5W57-1", nombre: "EXCELLO LATEX BLANCO HUESO", categoria: "pinturas", precio: 33.90, imagen: "PNG/EX1.png" },
+            { codigo: "11235425", nombre: "INODORO CAMPEON DE 2 PIEZAS", categoria: "inodoro", precio: 90.00, imagen: "IMG/inodoblanco.jpeg" },
+            // Agrega más productos aquí...
+        ];
+
+        // Variables globales
+        let productosFiltrados = [];
+        let paginaActual = 1;
+        const productosPorPagina = 10;
+
+        // Función para renderizar productos
+        function renderizarProductos() {
+            const galeria = document.getElementById('galeria');
+            galeria.innerHTML = '';
+
+            const inicio = (paginaActual - 1) * productosPorPagina;
+            const fin = inicio + productosPorPagina;
+            const productosPagina = productosFiltrados.slice(inicio, fin);
+
+            productosPagina.forEach(producto => {
+                const divProducto = document.createElement('div');
+                divProducto.className = 'producto';
+                divProducto.innerHTML = `
+                    <img src="${producto.imagen}" alt="${producto.nombre}">
+                    <h3>${producto.nombre}</h3>
+                    <p>Código: <span class="codigo">${producto.codigo}</span></p>
+                    <p>Precio: <span class="precio">$${producto.precio.toFixed(2)}</span></p>
+                `;
+                galeria.appendChild(divProducto);
+            });
+
+            renderizarPaginacion();
+        }
+
+        // Función para renderizar la paginación
+        function renderizarPaginacion() {
+            const paginacion = document.getElementById('paginacion');
+            paginacion.innerHTML = '';
+
+            const totalPaginas = Math.ceil(productosFiltrados.length / productosPorPagina);
+
+            for (let i = 1; i <= totalPaginas; i++) {
+                const boton = document.createElement('button');
+                boton.textContent = i;
+                boton.addEventListener('click', () => {
+                    paginaActual = i;
+                    renderizarProductos();
+                });
+                if (i === paginaActual) {
+                    boton.classList.add('active');
+                }
+                paginacion.appendChild(boton);
+            }
+        }
+
+        // Función para filtrar y ordenar productos
+        function filtrarYOrdenarProductos() {
+            const buscador = document.getElementById('buscador').value.toLowerCase();
+            const orden = document.getElementById('ordenar').value;
+            const categoria = document.getElementById('categoria').value;
+
+            productosFiltrados = productos.filter(producto => {
+                const coincideNombre = producto.nombre.toLowerCase().includes(buscador);
+                const coincideCodigo = producto.codigo.toLowerCase().includes(buscador);
+                const coincideCategoria = categoria === "todas" || producto.categoria === categoria;
+                return (coincideNombre || coincideCodigo) && coincideCategoria;
+            });
+
+            // Ordenar productos
+            if (orden === "precio-asc") {
+                productosFiltrados.sort((a, b) => a.precio - b.precio);
+            } else if (orden === "precio-desc") {
+                productosFiltrados.sort((a, b) => b.precio - a.precio);
+            } else if (orden === "categoria") {
+                productosFiltrados.sort((a, b) => a.categoria.localeCompare(b.categoria));
+            }
+
+            paginaActual = 1;
+            renderizarProductos();
+        }
+
+        // Escuchar eventos
+        document.getElementById('buscador').addEventListener('input', filtrarYOrdenarProductos);
+        document.getElementById('ordenar').addEventListener('change', filtrarYOrdenarProductos);
+        document.getElementById('categoria').addEventListener('change', filtrarYOrdenarProductos);
+
+        // Inicializar
+        filtrarYOrdenarProductos();
+    </script>
+
+</body>
+</html>
